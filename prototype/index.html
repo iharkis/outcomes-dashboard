@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDA Outcomes Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LDA Outcomes Dashboard</h1>
+        </header>
+
+        <!-- Project Selection View -->
+        <div id="project-selection-view">
+            <section id="project-section" class="section">
+                <h2>Project Selection</h2>
+                <div class="project-controls">
+                    <div class="project-search">
+                        <input type="text" id="project-search" placeholder="Search projects by name or reference...">
+                    </div>
+                    <div class="project-create">
+                        <button id="new-project-btn" class="btn btn-primary">Create New Project</button>
+                    </div>
+                </div>
+
+                <!-- Projects Table -->
+                <div class="projects-table-container">
+                    <table class="projects-table" id="projects-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="name">
+                                    Project Name <span class="sort-arrow"></span>
+                                </th>
+                                <th class="sortable" data-sort="reference">
+                                    Project No. <span class="sort-arrow"></span>
+                                </th>
+                                <th class="sortable" data-sort="created">
+                                    Created <span class="sort-arrow"></span>
+                                </th>
+                                <th>Outcomes</th>
+                                <th>Touchpoints</th>
+                                <th>Indicators</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projects-table-body">
+                            <!-- Project rows will be inserted here -->
+                        </tbody>
+                    </table>
+
+                    <!-- Empty state -->
+                    <div id="projects-empty-state" class="empty-state hidden">
+                        <p>No projects found. Create your first project to get started.</p>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span id="pagination-info">Showing 0 of 0 projects</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button id="prev-page-btn" class="btn btn-small btn-secondary">Previous</button>
+                            <span id="page-numbers"></span>
+                            <button id="next-page-btn" class="btn btn-small btn-secondary">Next</button>
+                        </div>
+                        <div class="page-size-controls">
+                            <label for="page-size-select">Show:</label>
+                            <select id="page-size-select">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span>per page</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Project Form -->
+                <div id="new-project-form" class="form-container hidden">
+                    <h3>Create New Project</h3>
+                    <div class="form-group">
+                        <label for="project-name">Project Name:</label>
+                        <input type="text" id="project-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-ref">Project No.:</label>
+                        <input type="text" id="project-ref" required>
+                    </div>
+                    <div class="form-actions">
+                        <button id="save-project-btn" class="btn btn-success">Save Project</button>
+                        <button id="cancel-project-btn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Project Workspace -->
+        <div id="project-workspace" class="hidden">
+            <div class="project-info">
+                <div class="project-header">
+                    <div class="project-title">
+                        <h2 id="current-project-name"></h2>
+                        <p id="current-project-ref" class="project-ref"></p>
+                    </div>
+                    <button id="back-to-projects-btn" class="btn btn-secondary">← Back to Projects</button>
+                </div>
+            </div>
+
+            <!-- Workspace Layout with Sidebar -->
+            <div class="workspace-layout">
+                <!-- Left Sidebar Navigation -->
+                <nav class="sidebar-nav">
+                    <div class="nav-section">
+                        <div class="nav-item nav-parent" id="nav-plan">
+                            <span class="nav-number">1</span>
+                            <span class="nav-title">Plan</span>
+                        </div>
+                        <div class="nav-subitems">
+                            <div class="nav-subitem" id="nav-outcomes">Outcomes</div>
+                            <div class="nav-subitem" id="nav-touchpoints">Touchpoints</div>
+                            <div class="nav-subitem" id="nav-indicators">Indicators</div>
+                            <div class="nav-subitem" id="nav-relationships">Relationships</div>
+                        </div>
+                    </div>
+                    <div class="nav-section">
+                        <div class="nav-item nav-parent" id="nav-create">
+                            <span class="nav-number">2</span>
+                            <span class="nav-title">Create</span>
+                        </div>
+                    </div>
+                    <div class="nav-section">
+                        <div class="nav-item nav-parent" id="nav-evaluate">
+                            <span class="nav-number">3</span>
+                            <span class="nav-title">Evaluate</span>
+                        </div>
+                    </div>
+                    <div class="nav-section">
+                        <div class="nav-item nav-parent" id="nav-review">
+                            <span class="nav-number">4</span>
+                            <span class="nav-title">Review</span>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Main Content Area -->
+                <div class="main-content">
+
+            <!-- Outcomes Page -->
+            <div id="outcomes-page" class="content-page hidden">
+                <h2 class="main-page-title">Outcomes</h2>
+                <p class="page-instruction">Define the key outcomes you want to achieve with this project.</p>
+
+                <!-- Outcomes Section -->
+                <section id="outcomes-section" class="section">
+                    <div class="section-header">
+                        <h4>Outcomes</h4>
+                        <div class="section-controls">
+                            <button id="add-outcome-btn" class="btn btn-primary">Add Outcome</button>
+                            <button id="bulk-add-outcomes-btn" class="btn btn-secondary">Bulk Add</button>
+                        </div>
+                    </div>
+                    <div id="outcomes-list" class="items-list"></div>
+
+                    <!-- Quick Add Outcome Form -->
+                    <div id="add-outcome-form" class="quick-add-form hidden">
+                        <div class="form-row">
+                            <input type="text" id="outcome-heading" placeholder="Outcome heading..." required>
+                            <button id="save-outcome-btn" class="btn btn-success">Add</button>
+                            <button id="cancel-outcome-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Add Outcomes Form -->
+                    <div id="bulk-outcomes-form" class="form-container hidden">
+                        <h5>Bulk Add Outcomes</h5>
+                        <p>Enter one outcome per line</p>
+                        <textarea id="bulk-outcomes-text" rows="8" placeholder="Improve customer satisfaction&#10;Reduce response time&#10;Enhance user experience"></textarea>
+                        <div class="form-actions">
+                            <button id="save-bulk-outcomes-btn" class="btn btn-success">Add All Outcomes</button>
+                            <button id="cancel-bulk-outcomes-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Touchpoints Page -->
+            <div id="touchpoints-page" class="content-page hidden">
+                <h2 class="main-page-title">Touchpoints</h2>
+                <p class="page-instruction">Define the key touchpoints where you will interact with stakeholders or measure progress.</p>
+
+                <!-- Touchpoints Section -->
+                <section id="touchpoints-section" class="section">
+                    <div class="section-header">
+                        <h4>Touchpoints</h4>
+                        <div class="section-controls">
+                            <button id="add-touchpoint-btn" class="btn btn-primary">Add Touchpoint</button>
+                            <button id="bulk-add-touchpoints-btn" class="btn btn-secondary">Bulk Add</button>
+                        </div>
+                    </div>
+                    <div id="touchpoints-list" class="items-list"></div>
+
+                    <!-- Quick Add Touchpoint Form -->
+                    <div id="add-touchpoint-form" class="quick-add-form hidden">
+                        <div class="form-row">
+                            <input type="text" id="touchpoint-heading" placeholder="Touchpoint heading..." required>
+                            <input type="text" id="touchpoint-description" placeholder="Description (optional)">
+                            <button id="save-touchpoint-btn" class="btn btn-success">Add</button>
+                            <button id="cancel-touchpoint-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Add Touchpoints Form -->
+                    <div id="bulk-touchpoints-form" class="form-container hidden">
+                        <h5>Bulk Add Touchpoints</h5>
+                        <p>Enter one touchpoint per line. Format: Heading | Description (description is optional)</p>
+                        <textarea id="bulk-touchpoints-text" rows="8" placeholder="Customer Support Portal | Online support system&#10;Training Program | Staff training sessions&#10;Marketing Campaign"></textarea>
+                        <div class="form-actions">
+                            <button id="save-bulk-touchpoints-btn" class="btn btn-success">Add All Touchpoints</button>
+                            <button id="cancel-bulk-touchpoints-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Indicators Page -->
+            <div id="indicators-page" class="content-page hidden">
+                <h2 class="main-page-title">Indicators</h2>
+                <p class="page-instruction">Define the indicators you will use to measure progress towards your outcomes.</p>
+
+                <!-- Indicators Section -->
+                <section id="indicators-section" class="section">
+                    <div class="section-header">
+                        <h4>Indicators</h4>
+                        <div class="section-controls">
+                            <button id="add-indicator-btn" class="btn btn-primary">Add Indicator</button>
+                            <button id="bulk-add-indicators-btn" class="btn btn-secondary">Bulk Add</button>
+                        </div>
+                    </div>
+                    <div id="indicators-list" class="items-list"></div>
+
+                    <!-- Quick Add Indicator Form -->
+                    <div id="add-indicator-form" class="quick-add-form hidden">
+                        <div class="form-row">
+                            <input type="text" id="indicator-description" placeholder="Indicator description..." required>
+                            <input type="text" id="indicator-baseline" placeholder="Baseline value (optional)">
+                            <button id="save-indicator-btn" class="btn btn-success">Add</button>
+                            <button id="cancel-indicator-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Add Indicators Form -->
+                    <div id="bulk-indicators-form" class="form-container hidden">
+                        <h5>Bulk Add Indicators</h5>
+                        <p>Enter one indicator per line. Format: Description | Baseline (baseline is optional)</p>
+                        <textarea id="bulk-indicators-text" rows="8" placeholder="Customer satisfaction rating | 6.5&#10;Average response time | 24 hours&#10;User engagement score"></textarea>
+                        <div class="form-actions">
+                            <button id="save-bulk-indicators-btn" class="btn btn-success">Add All Indicators</button>
+                            <button id="cancel-bulk-indicators-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Relationships Page -->
+            <div id="relationships-page" class="content-page hidden">
+                <h2 class="main-page-title">Define Relationships</h2>
+                <p class="page-instruction">For each indicator, select which outcomes it measures and which touchpoints are appropriate for measurement.</p>
+
+                <!-- Relationship Mapping Section -->
+                <section id="relationships-section" class="section">
+                    <div class="section-header">
+                        <h4>Define Indicator Relationships</h4>
+                        <p class="section-instruction">For each indicator, select which outcomes it measures and which touchpoints are appropriate for measurement.</p>
+                    </div>
+
+                    <div class="mapping-controls">
+                        <div class="mapping-mode">
+                            <label>
+                                <input type="radio" name="mapping-mode" value="indicator" checked> Map by Indicator
+                            </label>
+                            <label>
+                                <input type="radio" name="mapping-mode" value="matrix"> Matrix View
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Map by Indicator View -->
+                    <div id="indicator-mapping-view" class="mapping-view">
+                        <div id="indicator-mapping-list" class="mapping-list"></div>
+                    </div>
+
+                    <!-- Matrix View -->
+                    <div id="matrix-mapping-view" class="mapping-view hidden">
+                        <div class="matrix-container">
+                            <table id="relationship-matrix" class="relationship-matrix">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Create Page -->
+            <div id="create-page" class="content-page hidden">
+                <h2 class="main-page-title">Create</h2>
+                <p class="page-instruction">Record key project decisions and track their impact on outcomes. This helps maintain a clear record of decision-making processes and their effects.</p>
+
+                <div class="decision-controls">
+                    <button id="add-decision-btn" class="btn btn-primary">Add Decision</button>
+                    <button id="export-decisions-btn" class="btn btn-secondary">Export to CSV</button>
+                </div>
+
+                <!-- Add Decision Form -->
+                <div id="add-decision-form" class="form-container hidden">
+                    <h4>Add New Decision</h4>
+                    <div class="decision-form-grid">
+                        <div class="form-group">
+                            <label for="decision-ref">Ref No:</label>
+                            <input type="text" id="decision-ref" placeholder="e.g., DEC-001">
+                        </div>
+                        <div class="form-group">
+                            <label for="decision-date">Date:</label>
+                            <input type="date" id="decision-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="decision-topic">Topic:</label>
+                            <input type="text" id="decision-topic" placeholder="Where relevant">
+                        </div>
+                        <div class="form-group">
+                            <label for="decision-status">Status:</label>
+                            <select id="decision-status">
+                                <option value="">Select status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Implemented">Implemented</option>
+                                <option value="Reviewed">Reviewed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="decision-description">Project Decision:</label>
+                            <textarea id="decision-description" rows="3" placeholder="A short description of the project decision"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="decision-justification">Decision Justification:</label>
+                            <textarea id="decision-justification" rows="3" placeholder="Why was the decision made, by who, and how were outcomes used in the decision making process"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="decision-actions">Further Actions:</label>
+                            <textarea id="decision-actions" rows="3" placeholder="What further action is being taken following this decision"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="decision-impact">Impact on Outcomes:</label>
+                            <textarea id="decision-impact" rows="3" placeholder="What is the impact of this decision on the outcomes. Use the drop down menus to select a trend arrow. Refer to indicators where possible and relevant."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Outcome Impact Section -->
+                    <div class="outcome-impacts-section">
+                        <h5>Impact on Specific Outcomes</h5>
+                        <div id="outcome-impacts-list" class="outcome-impacts-grid">
+                            <!-- Dynamic outcome impact fields will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button id="save-decision-btn" class="btn btn-success">Save Decision</button>
+                        <button id="cancel-decision-btn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Decision Log Table -->
+                <div class="decision-log-container">
+                    <div class="decision-table-wrapper">
+                        <table id="decision-log-table" class="decision-table">
+                            <thead>
+                                <tr>
+                                    <th>Ref No</th>
+                                    <th>Date</th>
+                                    <th>Topic</th>
+                                    <th>Status</th>
+                                    <th>Project Decision</th>
+                                    <th>Decision Justification</th>
+                                    <th>Further Actions</th>
+                                    <th>Impact on Outcomes</th>
+                                    <!-- Dynamic outcome columns will be added here -->
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="decision-log-body">
+                                <!-- Decision entries will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div id="decisions-empty-state" class="empty-state hidden">
+                        <p>No decisions recorded yet. Add your first decision to get started.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluate Page -->
+            <div id="evaluate-page" class="content-page hidden">
+                <h2 class="main-page-title">Evaluate</h2>
+                <p class="page-instruction">For each touchpoint, evaluate how outcomes have informed decision making and track progress towards outcomes.</p>
+
+                <div class="evaluate-controls">
+                    <button id="export-evaluations-btn" class="btn btn-secondary">Export to CSV</button>
+                    <button id="export-all-data-btn" class="btn btn-secondary">Export All Data</button>
+                </div>
+
+                <!-- Evaluate Sub-Navigation -->
+                <div class="evaluate-nav">
+                    <button id="evaluate-by-touchpoint-btn" class="evaluate-nav-btn active">Evaluate by Touchpoint</button>
+                    <button id="view-all-answers-btn" class="evaluate-nav-btn">View All Answers</button>
+                </div>
+
+                <!-- Evaluate by Touchpoint View -->
+                <div id="evaluate-by-touchpoint-view" class="evaluate-sub-view">
+                    <!-- Touchpoint Selection -->
+                    <div class="touchpoint-selection">
+                        <label for="evaluate-touchpoint-select">Select Touchpoint:</label>
+                        <select id="evaluate-touchpoint-select" class="touchpoint-selector">
+                            <option value="">Choose a touchpoint to evaluate...</option>
+                        </select>
+                    </div>
+
+                <!-- Evaluation Content -->
+                <div id="evaluation-content" class="evaluation-content hidden">
+                    <!-- How outcomes informed decision making -->
+                    <section class="evaluation-section">
+                        <h3>Decision Making Evaluation</h3>
+                        <div class="form-group">
+                            <label for="decision-making-evaluation">How have outcomes informed decision making for this touchpoint?</label>
+                            <textarea id="decision-making-evaluation" rows="4" placeholder="Describe how outcomes have influenced decisions related to this touchpoint..."></textarea>
+                        </div>
+                    </section>
+
+                    <!-- Outcome Progress by Touchpoint -->
+                    <section class="evaluation-section">
+                        <h3>Outcome Progress</h3>
+                        <div id="outcome-progress-list" class="outcome-progress-container">
+                            <!-- Dynamic outcome progress entries will be inserted here -->
+                        </div>
+                    </section>
+
+                    <!-- Action Items -->
+                    <section class="evaluation-section">
+                        <h3>Action Items</h3>
+                        <div class="action-controls">
+                            <button id="add-action-item-btn" class="btn btn-primary">Add Action Item</button>
+                        </div>
+
+                        <!-- Add Action Item Form -->
+                        <div id="add-action-form" class="quick-add-form hidden">
+                            <div class="form-row">
+                                <input type="text" id="action-description" placeholder="Action item description..." required>
+                                <select id="action-priority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                                <input type="date" id="action-due-date">
+                                <button id="save-action-btn" class="btn btn-success">Add</button>
+                                <button id="cancel-action-btn" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </div>
+
+                        <div id="action-items-list" class="action-items-container">
+                            <!-- Action items will be displayed here -->
+                        </div>
+
+                        <!-- Empty state for actions -->
+                        <div id="actions-empty-state" class="empty-state hidden">
+                            <p>No action items added yet. Create your first action item to get started.</p>
+                        </div>
+                    </section>
+
+                    <!-- Save Evaluation -->
+                    <div class="evaluation-actions">
+                        <button id="save-evaluation-btn" class="btn btn-success btn-large">Save Evaluation</button>
+                    </div>
+                </div>
+
+                    <!-- Empty state when no touchpoint selected -->
+                    <div id="no-touchpoint-selected" class="empty-state">
+                        <p>Select a touchpoint above to begin evaluation.</p>
+                    </div>
+                </div>
+
+                <!-- View All Answers View -->
+                <div id="view-all-answers-view" class="evaluate-sub-view hidden">
+                    <div id="all-answers-content" class="all-answers-content">
+                        <!-- Dynamic touchpoint answers will be inserted here -->
+                    </div>
+
+                    <!-- Empty state when no evaluations exist -->
+                    <div id="no-evaluations-state" class="empty-state hidden">
+                        <p>No evaluations completed yet. Complete some touchpoint evaluations to see answers here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Page -->
+            <div id="review-page" class="content-page hidden">
+                <h2 class="main-page-title">Final Project Review</h2>
+                <p class="page-instruction">Complete your end-of-project evaluation to capture key learnings and outcomes achieved.</p>
+
+                <div class="review-controls">
+                    <button id="view-final-report-btn" class="btn btn-primary">View Final Report</button>
+                    <button id="download-final-report-btn" class="btn btn-secondary">Download Final Report</button>
+                </div>
+
+                <!-- Review Content -->
+                <div id="review-content" class="review-content">
+
+                    <!-- Project Overview Section -->
+                    <section class="review-section">
+                        <h3>Project Overview</h3>
+                        <div class="form-group">
+                            <label for="project-reflection">How have outcomes informed the whole project? What were the easy-wins, what were the hurdles to overcome? Would you do anything differently?</label>
+                            <textarea id="project-reflection" rows="6" placeholder="Reflect on how outcomes informed the project, easy wins, hurdles, and what you'd do differently..."></textarea>
+                        </div>
+                    </section>
+
+                    <!-- Outcomes Final Evaluation Section -->
+                    <section class="review-section">
+                        <h3>Outcomes Final Evaluation</h3>
+                        <div id="outcomes-final-evaluation-list" class="outcomes-final-container">
+                            <!-- Dynamic outcome final evaluations will be inserted here -->
+                        </div>
+                    </section>
+
+                    <!-- Indicators Final Measurements Section -->
+                    <section class="review-section">
+                        <h3>Indicators Final Measurements</h3>
+                        <div id="indicators-final-measurements-list" class="indicators-final-container">
+                            <!-- Dynamic indicator final measurements will be inserted here -->
+                        </div>
+                    </section>
+
+                    <!-- Retrospective Questions Section -->
+                    <section class="review-section">
+                        <h3>Retrospective Analysis</h3>
+
+                        <div class="form-group">
+                            <label for="change-analysis">Change: Evaluate and analyse findings</label>
+                            <textarea id="change-analysis" rows="5" placeholder="Evaluate and analyse the findings from this project..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lessons-learnt">Lessons Learnt: What lessons would you take forward? How will you communicate this and who to? Is this project worth turning into a case study for other EOs?</label>
+                            <textarea id="lessons-learnt" rows="5" placeholder="Document lessons learnt, communication plans, and case study potential..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="standout-stats">Standout Success Stats: Detail any standout statistics</label>
+                            <textarea id="standout-stats" rows="5" placeholder="Detail any standout statistics or success metrics..."></textarea>
+                        </div>
+                    </section>
+
+                    <!-- Save Review -->
+                    <div class="review-actions">
+                        <button id="save-review-btn" class="btn btn-success btn-large">Save Final Review</button>
+                    </div>
+                </div>
+
+                <!-- Empty state when no outcomes/indicators exist -->
+                <div id="review-empty-state" class="empty-state hidden">
+                    <p>Complete your outcomes and indicators in the Plan phase before creating the final review.</p>
+                </div>
+            </div>
+
+                </div>
+                <!-- End Main Content -->
+            </div>
+            <!-- End Workspace Layout -->
+        </div>
+        <!-- End Project Workspace -->
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
