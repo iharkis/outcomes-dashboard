@@ -1,4 +1,4 @@
-# LDA Outcomes Tool
+# Outcomes Tool
 
 A comprehensive web-based project management system designed to help organizations systematically plan, track, and evaluate project outcomes through a structured four-phase approach.
 
